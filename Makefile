@@ -9,6 +9,10 @@ FILES_TO_TEST ?= $(shell go list ./... | grep -v /vendor/)
 .PHONY: all
 all: go-format go-lint go-test go-bench go-build
 
+.PHONY: install
+install: $(BINGO)
+	$(BINGO) get
+
 .PHONY: format
 format: ## Runs all format targets.
 format: go-format
