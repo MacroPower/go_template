@@ -70,6 +70,7 @@ go-bench: $(BENCHSTAT)
 
 .PHONY: go-build
 go-build: ## Builds Go executables.
+go-build: HOSTNAME:=$(shell hostname)
 go-build: $(GORELEASER)
 	@echo ">> building Go executables"
-	$(GORELEASER) build --snapshot --rm-dist
+	HOSTNAME=$(HOSTNAME) $(GORELEASER) build --snapshot --clean

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/MacroPower/go_template/internal/log"
+	"github.com/MacroPower/go_template/internal/version"
 
 	"github.com/alecthomas/kong"
 )
@@ -39,6 +40,8 @@ func main() {
 
 	err := log.Info(logger).Log("msg", fmt.Sprintf("Starting %s", appName))
 	cliCtx.FatalIfErrorf(err)
+	version.LogInfo(logger)
+	version.LogBuildContext(logger)
 
 	sb := strings.Builder{}
 	Hello(&sb)
