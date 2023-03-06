@@ -40,8 +40,10 @@ func main() {
 
 	err := log.Info(logger).Log("msg", fmt.Sprintf("Starting %s", appName))
 	cliCtx.FatalIfErrorf(err)
-	version.LogInfo(logger)
-	version.LogBuildContext(logger)
+	err = version.LogInfo(logger)
+	cliCtx.FatalIfErrorf(err)
+	err = version.LogBuildContext(logger)
+	cliCtx.FatalIfErrorf(err)
 
 	sb := strings.Builder{}
 	Hello(&sb)

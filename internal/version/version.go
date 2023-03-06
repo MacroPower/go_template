@@ -1,12 +1,11 @@
 package version
 
 import (
+	"fmt"
 	"runtime"
 	"runtime/debug"
 
 	"github.com/MacroPower/go_template/internal/log"
-
-	kitlog "github.com/go-kit/log"
 )
 
 var (
@@ -22,28 +21,32 @@ var (
 )
 
 // LogInfo logs version, branch and revision.
-func LogInfo(logger kitlog.Logger) {
+func LogInfo(logger log.Logger) error {
 	if err := log.Info(logger).Log(
 		"msg", "info",
 		"version", Version,
 		"branch", Branch,
 		"revision", Revision,
 	); err != nil {
-		panic(err)
+		return fmt.Errorf("log error: %w", err)
 	}
+
+	return nil
 }
 
 // LogBuildContext logs goVersion, platform, buildUser and buildDate.
-func LogBuildContext(logger kitlog.Logger) {
+func LogBuildContext(logger log.Logger) error {
 	if err := log.Info(logger).Log(
 		"msg", "build context",
 		"go", GoVersion,
 		"platform", GoOS+"/"+GoArch,
-		"user", BuildUser,
-		"date", BuildDate,
+		"buildUser", BuildUser,
+		"buildDate", BuildDate,
 	); err != nil {
-		panic(err)
+		return fmt.Errorf("log error: %w", err)
 	}
+
+	return nil
 }
 
 func getRevision() string {
