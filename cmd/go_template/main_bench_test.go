@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkMain(b *testing.B) {
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		sb := strings.Builder{}
 		main.Hello(&sb)
 		sb.Reset()

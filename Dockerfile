@@ -1,4 +1,4 @@
-FROM golang:1.19
+FROM scratch
 
 COPY go_template /usr/local/bin/
 

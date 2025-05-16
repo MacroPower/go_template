@@ -1,11 +1,8 @@
 package version
 
 import (
-	"fmt"
 	"runtime"
 	"runtime/debug"
-
-	"github.com/MacroPower/go_template/internal/log"
 )
 
 var (
@@ -20,35 +17,6 @@ var (
 	GoArch    = runtime.GOARCH
 )
 
-// LogInfo logs version, branch and revision.
-func LogInfo(logger log.Logger) error {
-	if err := log.Info(logger).Log(
-		"msg", "info",
-		"version", Version,
-		"branch", Branch,
-		"revision", Revision,
-	); err != nil {
-		return fmt.Errorf("log error: %w", err)
-	}
-
-	return nil
-}
-
-// LogBuildContext logs goVersion, platform, buildUser and buildDate.
-func LogBuildContext(logger log.Logger) error {
-	if err := log.Info(logger).Log(
-		"msg", "build context",
-		"go", GoVersion,
-		"platform", GoOS+"/"+GoArch,
-		"buildUser", BuildUser,
-		"buildDate", BuildDate,
-	); err != nil {
-		return fmt.Errorf("log error: %w", err)
-	}
-
-	return nil
-}
-
 func getRevision() string {
 	rev := "unknown"
 
@@ -58,6 +26,7 @@ func getRevision() string {
 	}
 
 	modified := false
+
 	for _, v := range buildInfo.Settings {
 		switch v.Key {
 		case "vcs.revision":
@@ -68,6 +37,7 @@ func getRevision() string {
 			}
 		}
 	}
+
 	if modified {
 		return rev + "-dirty"
 	}

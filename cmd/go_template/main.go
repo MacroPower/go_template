@@ -1,49 +1,39 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"log/slog"
 	"strings"
+
+	"github.com/alecthomas/kong"
 
 	"github.com/MacroPower/go_template/internal/log"
 	"github.com/MacroPower/go_template/internal/version"
-
-	"github.com/alecthomas/kong"
 )
 
 const appName = "go_template"
 
 var cli struct {
 	Log struct {
-		Level  string `help:"Log level." default:"info"`
-		Format string `help:"Log format. One of: [logfmt, json]" default:"logfmt"`
-	} `prefix:"log." embed:""`
+		Level  string `default:"info"   help:"Log level."`
+		Format string `default:"logfmt" help:"Log format. One of: [logfmt, json]"`
+	} `embed:"" prefix:"log."`
 }
 
 func main() {
 	cliCtx := kong.Parse(&cli, kong.Name(appName))
 
-	logLevel := &log.AllowedLevel{}
-	if err := logLevel.Set(cli.Log.Level); err != nil {
+	logHandler, err := log.CreateHandlerWithStrings(cliCtx.Stderr, cli.Log.Level, cli.Log.Format)
+	if err != nil {
 		cliCtx.FatalIfErrorf(err)
 	}
+	slog.SetDefault(slog.New(logHandler))
 
-	logFormat := &log.AllowedFormat{}
-	if err := logFormat.Set(cli.Log.Format); err != nil {
-		cliCtx.FatalIfErrorf(err)
-	}
-
-	logger := log.New(&log.Config{
-		Level:  logLevel,
-		Format: logFormat,
-	})
-
-	err := log.Info(logger).Log("msg", fmt.Sprintf("Starting %s", appName))
-	cliCtx.FatalIfErrorf(err)
-	err = version.LogInfo(logger)
-	cliCtx.FatalIfErrorf(err)
-	err = version.LogBuildContext(logger)
-	cliCtx.FatalIfErrorf(err)
+	slog.Info("starting",
+		slog.String("app", appName),
+		slog.String("v", version.Version),
+		slog.String("revision", version.Revision),
+	)
 
 	sb := strings.Builder{}
 	Hello(&sb)
