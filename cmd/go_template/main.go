@@ -7,8 +7,8 @@ import (
 
 	"github.com/alecthomas/kong"
 
-	"github.com/MacroPower/go_template/internal/log"
-	"github.com/MacroPower/go_template/internal/version"
+	"github.com/MacroPower/go_template/pkg/log"
+	"github.com/MacroPower/go_template/pkg/version"
 )
 
 const appName = "go_template"
