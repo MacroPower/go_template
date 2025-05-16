@@ -5,18 +5,15 @@ A template for my Go projects.
 ## Features
 
 - Configured linter (using [golangci][golangci]).
-- Development dependency handling (using [bingo][bingo]).
+- Development environment (using [devbox][devbox]).
 - Build and release automation (using [goreleaser][goreleaser]).
-- Benchmarks (using [benchstat][benchstat] and [benchdiff][benchdiff]).
 - Command-line and environment variable parser (using [kong][kong]).
-- Leveled logger with logfmt and json support (using [go-kit/log][go-kit-log]).
-- Makefile with help, format, lint, test, bench, and build targets.
+- Leveled logger with logfmt and json support (using slog).
+- [Taskfile][task] with help, format, lint, test, and build targets.
 - GitHub Actions for all of the above.
 
 [golangci]: https://golangci-lint.run
-[bingo]: https://github.com/bwplotka/bingo
+[devbox]: https://www.jetify.com/devbox
 [goreleaser]: https://goreleaser.com
-[benchstat]: https://pkg.go.dev/golang.org/x/perf/cmd/benchstat
-[benchdiff]: https://github.com/WillAbides/benchdiff
 [kong]: https://github.com/alecthomas/kong
-[go-kit-log]: https://github.com/go-kit/log
+[task]: https://taskfile.dev/
