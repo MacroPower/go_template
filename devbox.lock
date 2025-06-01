@@ -124,51 +124,51 @@
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
       "resolved": "github:NixOS/nixpkgs/b1bebd0fe266bbd1820019612ead889e96a8fa2d?lastModified=1747312588&narHash=sha256-MmJvj6mlWzeRwKGLcwmZpKaOPZ5nJb%2F6al5CXqJsgjo%3D"
     },
-    "go-task@3.43.2": {
-      "last_modified": "2025-05-12T14:38:58Z",
-      "resolved": "github:NixOS/nixpkgs/eaeed9530c76ce5f1d2d8232e08bec5e26f18ec1#go-task",
+    "go-task@3.43.3": {
+      "last_modified": "2025-05-16T20:19:48Z",
+      "resolved": "github:NixOS/nixpkgs/12a55407652e04dcf2309436eb06fef0d3713ef3#go-task",
       "source": "devbox-search",
-      "version": "3.43.2",
+      "version": "3.43.3",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/80xsbrjmxbb10ba3v44l48fhg9rpdyfj-go-task-3.43.2",
+              "path": "/nix/store/5h0ykqayf8kfxwqlawzxvm05hlq7n22c-go-task-3.43.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/80xsbrjmxbb10ba3v44l48fhg9rpdyfj-go-task-3.43.2"
+          "store_path": "/nix/store/5h0ykqayf8kfxwqlawzxvm05hlq7n22c-go-task-3.43.3"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/7a1wimm8z159vrb0sx86s39vlwy7nfbz-go-task-3.43.2",
+              "path": "/nix/store/xxl2rg7k3c95gk5s0kwj8p8055r4yldf-go-task-3.43.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/7a1wimm8z159vrb0sx86s39vlwy7nfbz-go-task-3.43.2"
+          "store_path": "/nix/store/xxl2rg7k3c95gk5s0kwj8p8055r4yldf-go-task-3.43.3"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/fbc3qggxgabd77rwqc7l4iczyp8ax43j-go-task-3.43.2",
+              "path": "/nix/store/4az7i4f6lm4ss77wnf8kklkr21hrfhns-go-task-3.43.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/fbc3qggxgabd77rwqc7l4iczyp8ax43j-go-task-3.43.2"
+          "store_path": "/nix/store/4az7i4f6lm4ss77wnf8kklkr21hrfhns-go-task-3.43.3"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/pnyim2vhfwqh8bqrbd9vwbhqj1vsx2lx-go-task-3.43.2",
+              "path": "/nix/store/gjdgw1zhvl9hl7mmiw6ncpnpmpxlk2yb-go-task-3.43.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/pnyim2vhfwqh8bqrbd9vwbhqj1vsx2lx-go-task-3.43.2"
+          "store_path": "/nix/store/gjdgw1zhvl9hl7mmiw6ncpnpmpxlk2yb-go-task-3.43.3"
         }
       }
     },
@@ -313,102 +313,6 @@
             }
           ],
           "store_path": "/nix/store/iibmw8lki8rf2kanzpg6c6n9llfq1737-goreleaser-2.9.0"
-        }
-      }
-    },
-    "graphviz@12.2.1": {
-      "last_modified": "2025-05-12T14:38:58Z",
-      "resolved": "github:NixOS/nixpkgs/eaeed9530c76ce5f1d2d8232e08bec5e26f18ec1#graphviz",
-      "source": "devbox-search",
-      "version": "12.2.1",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/rzi49yrly60fa2n99lz3xbppz75q6si7-graphviz-12.2.1",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/rzi49yrly60fa2n99lz3xbppz75q6si7-graphviz-12.2.1"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/l6ib3n9wxk2kj8dq3icmgs89966g7d03-graphviz-12.2.1",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/l6ib3n9wxk2kj8dq3icmgs89966g7d03-graphviz-12.2.1"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/6d4f7b6igpir0f6hqfsr47lm50kgi1dg-graphviz-12.2.1",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/6d4f7b6igpir0f6hqfsr47lm50kgi1dg-graphviz-12.2.1"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/6pj6ap9v2frj5qd2p001ni52003fmz8d-graphviz-12.2.1",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/6pj6ap9v2frj5qd2p001ni52003fmz8d-graphviz-12.2.1"
-        }
-      }
-    },
-    "hyperfine@1.19": {
-      "last_modified": "2025-05-12T14:38:58Z",
-      "resolved": "github:NixOS/nixpkgs/eaeed9530c76ce5f1d2d8232e08bec5e26f18ec1#hyperfine",
-      "source": "devbox-search",
-      "version": "1.19.0",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/qk8vnm1z296lr86biz2daipn2j448qnd-hyperfine-1.19.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/qk8vnm1z296lr86biz2daipn2j448qnd-hyperfine-1.19.0"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/6gczgkh910qjqmfdk06i7ncanfg5vym2-hyperfine-1.19.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/6gczgkh910qjqmfdk06i7ncanfg5vym2-hyperfine-1.19.0"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/j1a09f1qv5k878lvn7b7sx6mbnnzbrvk-hyperfine-1.19.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/j1a09f1qv5k878lvn7b7sx6mbnnzbrvk-hyperfine-1.19.0"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/rlm5mmy90ragj1gwizi32wnssf569qn3-hyperfine-1.19.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/rlm5mmy90ragj1gwizi32wnssf569qn3-hyperfine-1.19.0"
         }
       }
     },
