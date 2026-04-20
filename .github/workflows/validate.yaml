@@ -25,7 +25,7 @@ jobs:
           go-version: stable
 
       - name: Run Go test
-        uses: robherley/go-test-action@v0
+        uses: robherley/go-test-action@v1
         with:
           testArguments: -race -vet=all ./...
           omit: |
