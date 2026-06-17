@@ -1,0 +1,5 @@
+# Dagger module configs are managed by `dagger develop`.
+**/dagger.json
+
+# Test fixtures, some intentionally malformed for negative tests.
+**/testdata/**

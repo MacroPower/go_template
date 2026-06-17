@@ -1,0 +1,99 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release
+        required: true
+
+jobs:
+  goreleaser:
+    name: goreleaser
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+      attestations: write
+    steps:
+      # TODO: configure GitHub App secrets (BOT_APP_ID, BOT_APP_PRIVATE_KEY).
+      # Until then, replace this step with a checkout that uses the default
+      # GITHUB_TOKEN, or skip the workflow until the app is set up.
+      - name: Generate Token
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: "${{ secrets.BOT_APP_ID }}"
+          private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
+          owner: "${{ github.repository_owner }}"
+          repositories: |
+            go_template
+          # goreleaser creates the GitHub release; the token needs only repo
+          # contents.
+          permission-contents: write
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: "${{ steps.app-token.outputs.token }}"
+          ref: ${{ github.event.inputs.tag != '' && format('refs/tags/{0}', github.event.inputs.tag) || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Determine tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            echo "value=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Capture OIDC request URL
+        id: oidc
+        run: echo "request-url=$ACTIONS_ID_TOKEN_REQUEST_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Release via Dagger
+        uses: dagger/dagger-for-github@v8.4.1
+        with:
+          version: "v0.21.4"
+          call: >-
+            ci release
+            --github-token=env://GITHUB_TOKEN
+            --registry-username="${{ github.actor }}"
+            --registry-password=env://REGISTRY_PASSWORD
+            --tag="${{ steps.tag.outputs.value }}"
+            --oidc-request-url="${{ steps.oidc.outputs.request-url }}"
+            --oidc-request-token=env://ACTIONS_ID_TOKEN_REQUEST_TOKEN
+            dist --output=./dist
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          enable-github-summary: "true"
+        env:
+          GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
+          REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Attest Build Provenance (checksums.txt)
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-checksums: ./dist/checksums.txt
+
+      - name: Check for digests.txt
+        id: digests
+        run: |
+          if [ -f ./dist/digests.txt ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Attest Build Provenance (digests.txt)
+        if: steps.digests.outputs.exists == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-checksums: ./dist/digests.txt

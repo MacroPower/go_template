@@ -1,0 +1,25 @@
+version: "3"
+
+set: [errexit, nounset, pipefail]
+shopt: [globstar]
+
+# Release tasks run through the `ci` Dagger toolchain, which composes the
+# goreleaser toolchain. go_template has a single root .goreleaser.yaml: check
+# validates it, snapshot cross-compiles the binaries (no publishing).
+tasks:
+  check:
+    desc: Validates the GoReleaser configuration
+    # `sources` skips the Dagger invocation when neither the goreleaser config
+    # nor the build inputs changed. The goreleaser version is pinned in the `ci`
+    # module and is not tracked here; re-run with --force after upgrading it.
+    sources:
+      - .goreleaser.yaml
+      - go.mod
+      - go.sum
+    cmds:
+      - dagger call ci lint-releaser
+
+  snapshot:
+    desc: Cross-compiles snapshot binaries to ./dist (no publishing)
+    cmds:
+      - dagger call ci build --output=./dist

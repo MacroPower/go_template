@@ -14,4 +14,87 @@
     "gomodTidy",
     "gomodUpdateImportPaths",
   ],
+  packageRules: [
+    // Disable Renovate's gomod manager for the `ci` Dagger module. Its go.mod
+    // imports generated SDK code (internal/dagger) that is gitignored, so
+    // `go get -t ./...` fails. The customManager below + postUpgradeTasks bring
+    // back PRs and refresh go.sum without invoking `go get` directly.
+    {
+      matchManagers: ["gomod"],
+      matchFileNames: ["ci/**"],
+      enabled: false,
+    },
+    // Skip the Dagger ecosystem in the Dagger-module go.mods. These packages
+    // are pinned to dagger.json's engineVersion and roll forward together when
+    // `dagger develop` regenerates the SDK; bumping them out of band creates
+    // SDK/engine version skew.
+    {
+      matchFileNames: ["ci/**"],
+      matchPackageNames: [
+        "dagger.io/{/,}**",
+        "github.com/dagger/{/,}**",
+        "github.com/Khan/genqlient{/,}**",
+        "github.com/vektah/gqlparser{/,}**",
+        "go.opentelemetry.io/{/,}**",
+      ],
+      enabled: false,
+    },
+  ],
+  customManagers: [
+    // Track every direct dep across the Dagger-module go.mods. The end-of-line
+    // anchor in multiline mode skips lines marked `// indirect` (they have
+    // text between the version and EOL). Dagger-ecosystem prefixes are
+    // filtered out by packageRules above.
+    //
+    // Renovate uses re2, which does not support lookahead, so we anchor
+    // with `^...$` under `(?m)` instead of `(?!\s*// indirect)`.
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^ci/.+/go\\.mod$/", "/^ci/go\\.mod$/"],
+      matchStrings: [
+        "(?m)^\\s+(?<depName>\\S+) (?<currentValue>v\\S+)$",
+      ],
+      datasourceTemplate: "go",
+    },
+    // Tool and image versions pinned as Go constants in the ci module,
+    // annotated with `// renovate:` comments, e.g.:
+    //   renovateVersion = "43.224.0" // renovate: datasource=npm depName=renovate
+    //   renovateImage   = "public.ecr.aws/docker/library/node:24-slim" // renovate: datasource=docker depName=public.ecr.aws/docker/library/node
+    // For image references, the version is the tag after the last colon.
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^ci/.+\\.go$/"],
+      matchStrings: [
+        '"(?:[^"]*:)?(?<currentValue>[^":]+)"\\s*// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)',
+      ],
+      versioningTemplate: "{{#if (equals datasource 'docker')}}docker{{else}}semver-coerced{{/if}}",
+    },
+    // Tool versions pinned in Taskfiles as `<value> # renovate:` annotations,
+    // e.g. the advisory deadcode pin:
+    //   DEADCODE_VERSION: v0.46.0 # renovate: datasource=go depName=golang.org/x/tools
+    // (devbox.json tool versions are handled by Renovate's built-in devbox
+    // manager, so they need no customManager here.)
+    {
+      customType: "regex",
+      managerFilePatterns: ["/(^|/)Taskfile\\.yaml$/", "/(^|/)\\.taskfiles/.+\\.yaml$/"],
+      matchStrings: [
+        '(?<currentValue>v?[0-9][^\\s#"]*)\\s*#\\s*renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)',
+      ],
+      versioningTemplate: "{{#if (equals datasource 'docker')}}docker{{else}}semver-coerced{{/if}}",
+    },
+  ],
+  postUpgradeTasks: {
+    // Run `dagger develop` in each Dagger module to regenerate internal/dagger
+    // and refresh go.sum after a customManager bump. The Renovate runner must
+    // have the dagger CLI on PATH and access to the Docker daemon socket
+    // (configured in .github/renovate-entrypoint.sh and renovate.yaml).
+    commands: [
+      "find ci -name go.mod -execdir dagger develop \\;",
+    ],
+    fileFilters: [
+      "ci/**/go.mod",
+      "ci/**/go.sum",
+    ],
+    executionMode: "branch",
+  },
 }

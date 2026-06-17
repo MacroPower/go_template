@@ -3,50 +3,90 @@ name: validate
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: test
+  check:
+    name: check (${{ matrix.task }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Each entry is a function on the `ci` toolchain. lint and test run the
+        # matching Taskfile target inside the devbox environment
+        # (dagger -> devbox -> task); the rest compose a toolchain or Node
+        # container directly: security (Trivy via the security toolchain),
+        # lint-actions (zizmor via the zizmor toolchain), lint-releaser
+        # (goreleaser check via the goreleaser toolchain), and lint-renovate
+        # (renovate-config-validator in a Node container). Mirrors the gates
+        # developers run via `task check:all`.
+        task:
+          - lint
+          - test
+          - security
+          - lint-actions
+          - lint-renovate
+          - lint-releaser
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Run ci ${{ matrix.task }}
+        uses: dagger/dagger-for-github@v8.4.1
         with:
-          go-version: stable
+          version: "v0.21.4"
+          call: ci ${{ matrix.task }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          enable-github-summary: "true"
 
-      - name: Run Go test
-        uses: robherley/go-test-action@v0
-        with:
-          testArguments: -race -vet=all ./...
-          omit: |
-            pie
-            untested
-
-  lint:
-    name: lint
+  coverage:
+    name: coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Export coverage profile
+        if: ${{ !cancelled() }}
+        uses: dagger/dagger-for-github@v8.4.1
         with:
-          go-version: stable
+          version: "v0.21.4"
+          call: ci test-coverage --output=coverage.txt
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          enable-github-summary: "true"
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
+      - name: Upload coverage reports to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v7
         with:
-          version: v2.1
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  toolchains:
+    name: toolchains
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run ci toolchain tests
+        uses: dagger/dagger-for-github@v8.4.1
+        with:
+          version: "v0.21.4"
+          verb: check
+          args: -m ci/tests
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          enable-github-summary: "true"

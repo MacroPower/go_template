@@ -1,8 +1,6 @@
 # This file contains all available configuration options
 # with their default values.
-
 version: "2"
-
 run:
   # Timeout for analysis, e.g. 30s, 5m.
   timeout: 5m
@@ -16,6 +14,7 @@ formatters:
     - gci
     - gofmt
     - gofumpt
+    - golines
   settings:
     gci:
       sections:
@@ -32,6 +31,9 @@ formatters:
           replacement: "any"
     gofumpt:
       extra-rules: true
+    golines:
+      reformat-tags: false
+      max-len: 120
 
 linters:
   default: none
@@ -41,9 +43,8 @@ linters:
     - bidichk
     - bodyclose
     - canonicalheader
-    - containedctx
     - contextcheck
-    - copyloopvar
+    - depguard
     - dupl
     - durationcheck
     - errcheck
@@ -57,36 +58,42 @@ linters:
     - gocheckcompilerdirectives
     - goconst
     - gocritic
+    - godoclint
     - godot
     - goprintffuncname
     - gosec
+    - gosmopolitan
     - govet
     - grouper
     - iface
+    - importas
     - inamedparam
     - ineffassign
     - intrange
-    - ireturn
+    - iotamixing
+    # - ireturn
     - makezero
     - mirror
     - misspell
+    - modernize
     - musttag
     - nakedret
     - nestif
     - nilerr
     - nilnesserr
     - nilnil
-    - nlreturn
     - noctx
+    - noinlineerr
+    # - nolintlint
     - nonamedreturns
     - nosprintfhostport
     - paralleltest
-    - perfsprint
-    - prealloc
+    # - perfsprint
+    # - prealloc
     - predeclared
     - reassign
-    - recvcheck
-    - revive
+    # - recvcheck
+    # - revive
     - sloglint
     - staticcheck
     - tagalign
@@ -94,14 +101,15 @@ linters:
     - testifylint
     - testpackage
     - thelper
+    - tparallel
     - unconvert
     - unparam
     - unused
     - usestdlibvars
     - usetesting
     - wastedassign
-    - whitespace
     - wrapcheck
+    - wsl_v5
 
   settings:
     misspell:
@@ -111,17 +119,18 @@ linters:
     exhaustive:
       default-signifies-exhaustive: true
 
-    wsl:
-      force-err-cuddling: true
-      force-case-trailing-whitespace: 2
+    wsl_v5:
+      allow-whole-block: true
+      case-max-lines: 2
+      default: all
+      disable:
+        - assign-exclusive
+        - if
 
     unused:
+      field-writes-are-uses: false
       exported-fields-are-used: false
       local-variables-are-used: false
-
-    whitespace:
-      multi-if: true
-      multi-func: true
 
     govet:
       enable-all: true
@@ -130,6 +139,8 @@ linters:
 
     usetesting:
       os-temp-dir: true
+      context-background: true
+      context-todo: true
 
     testifylint:
       enable-all: true
@@ -150,12 +161,22 @@ linters:
     gocritic:
       enable-all: true
       disabled-checks:
-        - commentedOutCode
-        - filepathJoin
         - unnamedResult
+        - singleCaseSwitch
+      settings:
+        hugeParam:
+          sizeThreshold: 1024
+
+    godoclint:
+      default: all
+      disable:
+        - require-pkg-doc
+      options:
+        max-len:
+          length: 88
 
     godot:
-      scope: all
+      scope: noinline
       period: true
       capital: true
 
@@ -170,52 +191,36 @@ linters:
         - os.RemoveAll
 
     grouper:
-      const-require-single-const: true
       import-require-single-import: true
       var-require-single-var: true
 
-    revive:
-      enable-all-rules: true
+    depguard:
       rules:
-        - name: line-length-limit
-          disabled: true
-        - name: cyclomatic
-          disabled: true
-        - name: cognitive-complexity
-          disabled: true
-        - name: add-constant
-          disabled: true
-        - name: function-length
-          disabled: true
-        - name: max-public-structs
-          disabled: true
-        - name: unused-receiver
-          disabled: true
-        - name: flag-parameter
-          disabled: true
-        - name: confusing-results
-          disabled: true
-        - name: exported
-          disabled: true
-        - name: package-comments
-          disabled: true
-        - name: nested-structs
-          disabled: true
+        main:
+          deny:
+            - pkg: "golang.org/x/exp/slog"
+              desc: use log/slog
+            - pkg: "github.com/pkg/errors"
+              desc: use errors
 
   exclusions:
     rules:
       - path: _test\.go
         linters:
           - dupl
-          - promlinter
-          - godot
+          - goconst
           - gosec
-      - source: "^\\) .+ \\{$"
-        linters:
-          - whitespace
+          - gosmopolitan
+          - godoclint
+      - path: _test\.go
+        text: "fieldalignment:"
       - source: "= `"
         linters:
           - grouper
       - text: "\\*github\\.com/hashicorp/go-multierror\\.Error"
         linters:
           - wrapcheck
+      - path: cmd/
+        linters:
+          - wrapcheck
+          - godoclint

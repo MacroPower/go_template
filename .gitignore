@@ -5,6 +5,7 @@
 *.so
 *.dylib
 dist/
+/go_template
 
 # Test binary, built with `go test -c`
 *.test
@@ -23,6 +24,12 @@ dist/
 
 # Devbox
 .devbox/
+
+# Worktrees
+.worktrees/
+
+# SARIF scan output
+*.sarif
 
 # Temp files
 .tmp/

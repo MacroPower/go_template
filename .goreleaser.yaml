@@ -18,7 +18,6 @@ builds:
     main: ./cmd/go_template
     goos:
       - linux
-      - windows
       - darwin
     goarch:
       - amd64
@@ -27,10 +26,10 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w
-      - -X github.com/MacroPower/go_template/pkg/version.Version={{.Version}}
-      - -X github.com/MacroPower/go_template/pkg/version.Branch={{.Branch}}
-      - -X github.com/MacroPower/go_template/pkg/version.BuildUser={{.Env.USER}}@{{.Env.HOSTNAME}}
-      - -X github.com/MacroPower/go_template/pkg/version.BuildDate={{.Date}}
+      - -X go.jacobcolvin.com/x/version.Version={{.Version}}
+      - -X go.jacobcolvin.com/x/version.Branch={{.Branch}}
+      - -X go.jacobcolvin.com/x/version.BuildUser={{.Env.USER}}@{{.Env.HOSTNAME}}
+      - -X go.jacobcolvin.com/x/version.BuildDate={{.Date}}
     flags:
       - -trimpath
     buildmode: pie
@@ -92,6 +91,27 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     files:
       - LICENSE
+
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
+docker_signs:
+  - cmd: cosign
+    artifacts: manifests
+    output: true
+    args:
+      - sign
+      - "${artifact}@${digest}"
+      - "--yes"
+
 checksum:
   name_template: "checksums.txt"
 snapshot:

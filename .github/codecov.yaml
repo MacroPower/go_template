@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=https://www.schemastore.org/codecov.json
+
+coverage:
+  range: "70..100"

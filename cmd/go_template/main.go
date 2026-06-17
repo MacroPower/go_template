@@ -1,48 +1,121 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"io"
 	"log/slog"
-	"strings"
+	"os"
 
-	"github.com/alecthomas/kong"
-
-	"github.com/MacroPower/go_template/pkg/log"
-	"github.com/MacroPower/go_template/pkg/version"
+	"charm.land/fang/v2"
+	"github.com/spf13/cobra"
+	"go.jacobcolvin.com/x/cobras/log"
+	"go.jacobcolvin.com/x/cobras/profile"
+	"go.jacobcolvin.com/x/version"
 )
 
 const appName = "go_template"
 
-var cli struct {
-	Log struct {
-		Level  string `default:"info"   help:"Log level."`
-		Format string `default:"logfmt" help:"Log format. One of: [logfmt, json]"`
-	} `embed:"" prefix:"log."`
-}
+// ErrLogHandler indicates an error occurred while creating a log handler.
+var ErrLogHandler = errors.New("create log handler")
 
 func main() {
-	cliCtx := kong.Parse(&cli, kong.Name(appName))
-
-	logHandler, err := log.CreateHandlerWithStrings(cliCtx.Stderr, cli.Log.Level, cli.Log.Format)
-	if err != nil {
-		cliCtx.FatalIfErrorf(err)
-	}
-	slog.SetDefault(slog.New(logHandler))
-
-	slog.Info("starting",
-		slog.String("app", appName),
-		slog.String("v", version.Version),
-		slog.String("revision", version.Revision),
+	err := fang.Execute(
+		context.Background(),
+		newRootCmd(),
+		fang.WithVersion(version.GetVersion()),
 	)
-
-	sb := strings.Builder{}
-	Hello(&sb)
-	cliCtx.Printf("%s", sb.String())
+	if err != nil {
+		os.Exit(1)
+	}
 }
 
-func Hello(r io.Writer) {
-	_, err := r.Write([]byte("Hello World!"))
-	if err != nil {
-		panic(err)
+// newRootCmd builds the root [*cobra.Command] for the go_template CLI. Logging
+// and profiling are configured from persistent flags in PersistentPreRunE, so
+// every subcommand shares the same setup.
+func newRootCmd() *cobra.Command {
+	logCfg := log.NewConfig()
+	profileCfg := profile.NewConfig()
+
+	cmd := &cobra.Command{
+		Use:          appName,
+		Short:        "A template for my Go projects.",
+		SilenceUsage: true,
+		Version:      version.GetVersion(),
 	}
+
+	logCfg.RegisterFlags(cmd.PersistentFlags())
+	logCfg.MustRegisterCompletions(cmd)
+	profileCfg.RegisterFlags(cmd.PersistentFlags())
+	profileCfg.MustRegisterCompletions(cmd)
+
+	profiler := profileCfg.NewProfiler()
+
+	cmd.PersistentPreRunE = func(cc *cobra.Command, _ []string) error {
+		err := profiler.Start()
+		if err != nil {
+			return fmt.Errorf("start profiler: %w", err)
+		}
+
+		h, err := logCfg.NewHandler(cc.ErrOrStderr())
+		if err != nil {
+			return fmt.Errorf("%w: %w", ErrLogHandler, err)
+		}
+
+		slog.SetDefault(slog.New(h))
+
+		return nil
+	}
+
+	cmd.PersistentPostRunE = func(_ *cobra.Command, _ []string) error {
+		err := profiler.Stop()
+		if err != nil {
+			return fmt.Errorf("stop profiler: %w", err)
+		}
+
+		return nil
+	}
+
+	cmd.AddCommand(newHelloCmd())
+	cmd.AddCommand(newVersionCmd())
+
+	return cmd
+}
+
+// newHelloCmd returns a minimal example subcommand. Replace it with the
+// commands your project actually needs.
+func newHelloCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "hello",
+		Short: "Print a greeting",
+		RunE: func(cc *cobra.Command, _ []string) error {
+			slog.Debug("saying hello")
+
+			return Hello(cc.OutOrStdout())
+		},
+	}
+}
+
+// newVersionCmd returns a command that prints full build information.
+func newVersionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Show version information",
+		RunE: func(cc *cobra.Command, _ []string) error {
+			cc.Println(version.Get().String())
+
+			return nil
+		},
+	}
+}
+
+// Hello writes a greeting to w.
+func Hello(w io.Writer) error {
+	_, err := io.WriteString(w, "Hello World!")
+	if err != nil {
+		return fmt.Errorf("write greeting: %w", err)
+	}
+
+	return nil
 }

@@ -7,10 +7,15 @@ import (
 	main "github.com/MacroPower/go_template/cmd/go_template"
 )
 
-func BenchmarkMain(b *testing.B) {
+func BenchmarkHello(b *testing.B) {
+	sb := strings.Builder{}
+
 	for range b.N {
-		sb := strings.Builder{}
-		main.Hello(&sb)
 		sb.Reset()
+
+		err := main.Hello(&sb)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

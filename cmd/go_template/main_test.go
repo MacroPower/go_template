@@ -4,16 +4,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	main "github.com/MacroPower/go_template/cmd/go_template"
 )
 
-func TestMain(t *testing.T) {
+func TestHello(t *testing.T) {
 	t.Parallel()
 
-	sb := strings.Builder{}
-	main.Hello(&sb)
+	want := "Hello World!"
 
-	if want := "Hello World!"; sb.String() != want {
-		t.Fatalf("expected %s, got %s", want, sb.String())
-	}
+	sb := strings.Builder{}
+	require.NoError(t, main.Hello(&sb))
+	require.Equal(t, want, sb.String())
 }

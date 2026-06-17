@@ -1,4 +1,27 @@
 #!/bin/bash
+set -euo pipefail
+
+# Single source of truth for the dagger version is the repo's dagger.json.
+# The runner's repo checkout is mounted at /workspace via docker-volumes
+# in renovate.yaml.
+DAGGER_VERSION="$(jq -r '.engineVersion' /workspace/dagger.json)"
+if [ -z "${DAGGER_VERSION}" ] || [ "${DAGGER_VERSION}" = "null" ]; then
+  echo "engineVersion is missing from /workspace/dagger.json" >&2
+  exit 1
+fi
+
+echo "Installing dagger ${DAGGER_VERSION}"
+curl -fsSL https://dl.dagger.io/dagger/install.sh \
+  | DAGGER_VERSION="${DAGGER_VERSION}" BIN_DIR=/usr/local/bin sh
+
+# Grant the renovate-running user access to the host Docker socket so
+# `dagger develop` can spawn the engine container. The socket is mounted
+# by renovatebot/github-action when mount-docker-socket: true is set.
+if [ -S /var/run/docker.sock ]; then
+  DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+  groupadd -fg "${DOCKER_GID}" docker || true
+  usermod -aG docker ubuntu
+fi
 
 groupadd -r nixbld
 
