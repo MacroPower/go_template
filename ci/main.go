@@ -38,7 +38,7 @@ const (
 	// Docker Official Image, pulled from Docker's verified publisher
 	// space on ECR Public to avoid Docker Hub pull rate limits.
 	renovateImage   = "public.ecr.aws/docker/library/node:24-slim" // renovate: datasource=docker depName=public.ecr.aws/docker/library/node
-	renovateVersion = "43.233.4"                                   // renovate: datasource=npm depName=renovate
+	renovateVersion = "43.251.0"                                   // renovate: datasource=npm depName=renovate
 
 	// zizmorConfig is the zizmor configuration file used by [Ci.LintActions],
 	// relative to the source root.
